@@ -33,6 +33,9 @@ model_constants = parameters()
 # Example scanning by changing the value of c_1
 # The source code for plotting
 
+# Load the package for plotting if necessary
+using Plots
+
 # Plot the figures with parameter scanning
 fig = plot(
     ylabel = "Chlamy ratio to the total biomass",
