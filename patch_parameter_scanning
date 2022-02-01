@@ -1,0 +1,55 @@
+using Parameters
+
+@with_kw struct parameters
+    c₁::Float64 = 0.13
+    c₂::Float64 = 0.11
+    c₃::Float64 = 0.05
+    a::Float64 = 0.95
+    b::Float64 = 7.5
+    c::Float64 = 0.34
+    d::Float64 = 8.2
+    e::Float64 = 0.37
+    f::Float64 = 1.52
+    OD_chlamy::Float64 = 1.0
+    OD_bacteria::Float64 = 1.0
+    α::Float64 = 1.5
+    g₁::Float64 = 10.0
+    g₂::Float64 = 12.0
+    d₁::Float64 = 0.005
+    d₂::Float64 = 0.05
+    pop_c::Float64 = 0.025
+    pop_sc::Float64 = 0.025
+    Dil_const::Float64 = 0.072
+    N₁⁰::Float64 = 10.0
+    N₂⁰::Float64 = 0.2
+    C⁰::Float64 = 0.01
+    SC⁰::Float64 = 0.1
+    threshold::Float64 = 10.0
+    Δ⁰::Int = 0
+end
+
+model_constants = parameters()
+
+# Example scanning by changing the value of c_1
+# The source code for plotting
+
+# Plot the figures with parameter scanning
+fig = plot(
+    ylabel = "Chlamy ratio to the total biomass",
+    xlabel = "Time (t)",
+    #label = "Biomass ratio: [C]/([C] + [SC]",
+    ylim = (0.0, 1.0),
+    legend = :outertopright
+)
+
+for i in (0.05, 0.075, 0.10, 0.125, 0.15, 0.20, 0.25)
+    model_constants = parameters(c₁ = i)
+    prob = ODEProblem(ode_sys, u0, tspan, model_constants)    # Calling the ODE problem before running the solver to change the parameter
+    sol = solve(prob, callback=cbs, saveat=0.1)
+    arr = Array(sol)
+    plot!(fig, sol.t, arr[3,:] ./ (arr[3,:] .+ arr[4,:]), label = "c₁ = $i")
+end
+
+
+# To display the figure
+fig
