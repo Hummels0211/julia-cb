@@ -1,6 +1,6 @@
 using DifferentialEquations
 using Parameters
-using Plots
+using CairoMakie # use Makie instead, well worth the effort to learn!!!!
 
 # The basic turbidostat model with time-delay effects (for N_2)
 
@@ -35,10 +35,18 @@ end
 
 model_constants = parameters()   # Create the default parameters
 
-const out = zeros(5) # Define a cache variable
+# make functions one liners for readability
+sub_asm(a, b, X) = a * X / (b + X)
+sub_asm_lin(a, X) = a * X
+sub_asm_cat(a, b, X) = a * (X^2) / (b^2 + X^2)
+sub_asm_exp(a, b, X) = a * (1 - exp(-b * X))
+growth_sat(a, X) = a / (a + X)
+dilution(X, Y, a, b, d) = a * X + b * Y + d
+
+out = zeros(5) # Define a cache variable
 # Define the DDE system, parameter list p can be retrieved from the previous settings
-function dde_sys(du, u, p, h, t)
-    hist = h(p, t-tau)[3] # updates out to be the correct history function
+function dde_sys(du, u, h, p, t)
+    hist = h(p, t - p.tau)[3] # updates out to be the correct history function
     
     du[1] =
         u[5] * dilution(u[3], u[4], p.pop_c, p.pop_sc, 0) * (p.N₁⁰ - u[1]) -
@@ -82,7 +90,7 @@ cb2 = DiscreteCallback(stop_dilution_condition, stop_dilution_affect!)
 cbs = CallbackSet(cb1, cb2)
 
 h(p, t) = ones(5)
-tau = 10
+tau = model_constants.tau
 lags = [tau]
 
 tspan = (0.0, 1000.0)
@@ -94,7 +102,7 @@ u0 = [
     model_constants.Δ⁰,
 ]
 
-prob = DDEProblem(dde_sys, u0, h, tspan, p = model_constants; constant_lags=lags)
+prob = DDEProblem(dde_sys, u0, h, tspan, model_constants; constant_lags=lags)
 
 
 alg = MethodOfSteps(Tsit5())
