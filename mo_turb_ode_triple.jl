@@ -54,12 +54,13 @@ function ode_sys(du, u, p, t)
     du[1] =
         u[5] * dilution(u[3], u[4], p.pop_c, p.pop_sc, 0) * (p.N₁⁰ - u[1]) -
         p.c₁ * sub_asm(p.a, p.b, u[1]) * u[3] / p.OD_chlamy -
-        p.c₂ * sub_asm(p.c, p.d, u[1]) * u[3] / p.OD_bacteria - 
-        
+        p.c₂ * sub_asm(p.c_1, p.d_1, u[1]) * u[3] / p.OD_bacteria - 
+        p.c₄ * sub_asm(p.c_2, p.d_2, u[1]) * u[3] / p.OD_bacteria
 
     du[2] =
         p.α * u[3] -
-        p.c₃ * sub_asm(p.e, p.f, u[2]) * u[4] / p.OD_bacteria -
+        p.c₃ * sub_asm(p.e_1, p.f_1, u[2]) * u[4] / p.OD_bacteria -
+        p.c₅ * sub_asm(p.e_2, p.f_2, u[2]) * u[4] / p.OD_bacteria -
         u[6] * u[2] * dilution(u[3], u[4], p.pop_c, p.pop_sc, 0)
 
     du[3] =
