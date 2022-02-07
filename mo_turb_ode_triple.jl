@@ -8,7 +8,7 @@ using Plots
     c₁::Float64 = 0.13   # The assimilation rate of C
     c₂::Float64 = 0.11   # The assimilation rate of SC1
     c₃::Float64 = 0.05   # The non-metabolic assimilation rate of SC1
-    c₄::FLoat64 = 0.12   # The assimilation rate of SC2
+    c₄::Float64 = 0.12   # The assimilation rate of SC2
     c₅::Float64 = 0.06   # The non-metabolic assimilation rate of SC2
     a::Float64 = 0.95    # The assimilation constants of C
     b::Float64 = 7.5
@@ -34,9 +34,6 @@ using Plots
     pop_sc_2::Float64 = 0.025
     Dil_const::Float64 = 0.072
     threshold::Float64 = 10.0
-end
-
-@with_kw struct ini_conditions
     N₁⁰::Float64 = 10.0
     N₂⁰::Float64 = 0.2
     C⁰::Float64 = 0.01
@@ -45,9 +42,18 @@ end
     Δ⁰::Int = 0
 end
 
+#@with_kw struct ini_conditions
+#    N₁⁰::Float64 = 10.0
+#    N₂⁰::Float64 = 0.2
+#    C⁰::Float64 = 0.01
+#    SC₁⁰::Float64 = 0.1
+#    SC₂⁰::Float64 = 0.1
+#    Δ⁰::Int = 0
+#end
+
 # Set the default values of the parameters and the initial conditions
 model_constants = parameters()
-u0 = ini_conditions()
+#ini_con = ini_conditions()
 
 # make functions one liners for readability
 sub_asm(a, b, X) = a * X / (b + X)
@@ -107,11 +113,21 @@ cb1 = DiscreteCallback(activate_dilution_condition, activate_dilution_affect!)
 cb2 = DiscreteCallback(stop_dilution_condition, stop_dilution_affect!)
 cbs = CallbackSet(cb1, cb2)
 
+# Create a array for initial conditions
+u0 = [
+    model_constants.N₁⁰,
+    model_constants.N₂⁰,
+    model_constants.C⁰,
+    model_constants.SC₁⁰,
+    model_constants.SC₂⁰,
+    model_constants.Δ⁰
+]
+
 # Set the time for simulation
 tspan = (0.0, 1000.0)
 
 # Define the ODE problem for simulation
-prob = ODEProblem(ode_sys, u0, tspan, model_constants)
+prob = ODEProblem(ode_sys_tri, u0, tspan, model_constants)
 sol = solve(
     prob,
     callback=cbs,
@@ -120,12 +136,12 @@ sol = solve(
 
 plot_layout = @layout [
     grid(3,2)
-    a{0.2h}
+    #a{0.2h}
 ]
 
 plot(sol,
     dpi = 500,
-    size = (800,600),
+    size = (600,600),
     layout = plot_layout,
     title = ["N₁" "N₂" "Chlamy" "SynCom_1" "SynCom_2" "Dilution Switch"],
     label = ["" "" "" "" "" ""]
