@@ -6,9 +6,9 @@ using Plots
 
 @with_kw struct parameters
     c₁::Float64 = 0.13   # The assimilation rate of C
-    c₂::Float64 = 0.11   # The assimilation rate of SC1
+    c₂::Float64 = 0.12   # The assimilation rate of SC1
     c₃::Float64 = 0.05   # The non-metabolic assimilation rate of SC1
-    c₄::Float64 = 0.12   # The assimilation rate of SC2
+    c₄::Float64 = 0.04   # The assimilation rate of SC2
     c₅::Float64 = 0.06   # The non-metabolic assimilation rate of SC2
     a::Float64 = 0.95    # The assimilation constants of C
     b::Float64 = 7.5
@@ -23,6 +23,8 @@ using Plots
     OD_chlamy::Float64 = 1.0
     OD_bacteria::Float64 = 1.0
     α::Float64 = 1.5
+    β₁::Float64 = 0.012    # The Lotka Volterra coefficient from SC1 to SC2
+    β₂::Float64 = - 0.012  # The Lotka Volterra coefficient from SC2 to SC1
     g₁::Float64 = 10.0
     g₂::Float64 = 12.0
     g₃::Float64 = 7.0
@@ -84,14 +86,16 @@ function ode_sys_tri(du, u, p, t)
         u[4] * (
             p.c₂ * sub_asm(p.c_1, p.d_1, u[1]) +
             p.c₃ * sub_asm(p.e_1, p.f_1, u[2]) - p.d₂ -
-            u[6] * dilution(u[3], u[4], u[5], p.pop_c, p.pop_sc_1, p.pop_sc_2, 0)
+            u[6] * dilution(u[3], u[4], u[5], p.pop_c, p.pop_sc_1, p.pop_sc_2, 0) +
+            p.β₂ * u[5]
         )
 
     du[5] = 
           u[5] * (
             p.c₄ * sub_asm(p.c_2, p.d_2, u[1]) +
             p.c₅ * sub_asm(p.e_2, p.f_2, u[2]) - p.d₃ -
-            u[6] * dilution(u[3], u[4], u[5], p.pop_c, p.pop_sc_1, p.pop_sc_2, 0)
+            u[6] * dilution(u[3], u[4], u[5], p.pop_c, p.pop_sc_1, p.pop_sc_2, 0) +
+            p.β₁ * u[4]
         )
 
     du[6] = 0
