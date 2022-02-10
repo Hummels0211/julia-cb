@@ -1,0 +1,58 @@
+# For ODE system
+
+# Reset the default values of the parameters
+model_constants = parameters()
+
+
+# Plot the figures with parameter scanning
+fig = plot(
+    ylabel = "Chlamy ratio to the total biomass",
+    xlabel = "Time (t)",
+    #label = "Biomass ratio: [C]/([C] + [SC]",
+    ylim = (0.0, 1.0),
+    legend = :outertopright
+)
+
+for i in (0.05, 0.075, 0.10, 0.125, 0.15, 0.20, 0.25)
+    model_constants = parameters(c₁ = i)
+    prob = ODEProblem(ode_sys, u0, tspan, model_constants)
+    sol = solve(prob, callback=cbs, saveat=0.1)
+    arr = Array(sol)
+    plot!(fig, sol.t, arr[3,:] ./ (arr[3,:] .+ arr[4,:]), label = "c₁ = $i",
+        lw = 2, background_color = :transparent, foreground_color=:black)
+end
+
+#save plot
+savefig("ODE_sim_c1_scan.png")
+
+# fig
+
+
+# For SDE system
+
+# Reset the default values of the parameters
+model_constants = parameters()
+
+
+# Plot the figures with parameter scanning
+fig = plot(
+    ylabel = "Chlamy ratio to the total biomass",
+    xlabel = "Time (t)",
+    #label = "Biomass ratio: [C]/([C] + [SC]",
+    ylim = (0.0, 1.0),
+    legend = :outertopright
+)
+
+for i in (0.05, 0.075, 0.10, 0.125, 0.15, 0.20, 0.25)
+    model_constants = parameters(c₁ = i)
+    prob = SDEProblem(ode_sys, σ_ode_sys, u0, tspan, model_constants, noise=W)
+    sol = solve(prob, SRIW1(), callback=cbs, saveat=0.1)
+    arr = Array(sol)
+    plot!(fig, sol.t, arr[3,:] ./ (arr[3,:] .+ arr[4,:]), label = "c₁ = $i",
+        lw = 2, background_color = :transparent, foreground_color=:black)
+end
+
+#save plot
+savefig("SDE_sim_c1_scan.png")
+
+# fig
